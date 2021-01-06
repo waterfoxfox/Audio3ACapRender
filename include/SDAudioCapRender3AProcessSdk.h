@@ -4,7 +4,7 @@
 //* 内容摘要：windows音频采集、播放、3A一体类 DLL封装
 //*	
 //* 当前版本：V1.0		
-//* 作    者：www.mediapro.cc
+//* 作    者：mediapro
 //* 完成日期：2017-11-05
 //**************************************************************************//
 
@@ -42,6 +42,11 @@ typedef int BOOL;
 #define FALSE 0
 #endif
 
+//枚举音频采集或渲染设备的最大数量
+#define MAX_SUPPORT_DEVICES_NUM				8
+//枚举音频采集或渲染设备名称的最大长度																															
+#define MAX_SUPPORT_DEVICES_NAME_LEN		256
+
 //日志输出的级别
 typedef enum CAP_RENDER_3A_LOG_OUTPUT_LEVEL
 {
@@ -61,6 +66,28 @@ typedef void (*Output3AProcessedCaptureData)(unsigned char *pucData, int nLen, v
 
 //////////////////////////////////////////////////////////////////////////
 // 音频3A处理-采集-渲染封装接口
+
+/***
+* 枚举当前系统可用的音频采集设备(获取设备ID和设备名称)
+* @param: pnDeviceIds 设备ID存放列表，系统默认音频采集设备其ID为-1
+* @param: pDeviceNames 设备名称存放列表
+* @param: nMaxDeviceNum 最大枚举的设备数量
+* @param: nMaxDeviceNameLen 最大设备名长度
+* @return: 返回设备数量
+*/
+DLLIMPORT int SDGetAudioInputDeviceList(int *pnDeviceIds, char(*pDeviceNames)[MAX_SUPPORT_DEVICES_NAME_LEN], int nMaxDeviceNum, int nMaxDeviceNameLen);
+
+/***
+* 枚举当前系统可用的音频渲染设备(获取设备ID和设备名称)
+* @param: pnDeviceIds 设备ID存放列表，系统默认音频渲染设备其ID为-1
+* @param: pDeviceNames 设备名称存放列表
+* @param: nMaxDeviceNum 最大枚举的设备数量
+* @param: nMaxDeviceNameLen 最大设备名长度
+* @return: 返回设备数量
+*/
+DLLIMPORT int SDGetAudioOutputDeviceList(int *pnDeviceIds, char(*pDeviceNames)[MAX_SUPPORT_DEVICES_NAME_LEN], int nMaxDeviceNum, int nMaxDeviceNameLen);
+
+
 
 /***
 * 创建SD3ACapRenderProcess对象
@@ -84,16 +111,17 @@ DLLIMPORT void  SD3ACapRenderProcess_Delete(void** pp3AProcess);
 * 开始启动SD3ACapRenderProcess
 * @param p3AProcess: 模块指针
 * @param nCapDeviceID: 采集音频设备ID，-1为默认设备
+* @param nRenderDeviceID: 音频渲染设备ID，-1为默认设备
 * @param nSampleRate: 输入待处理数据采样率
 * @param nChannelNum: 输入待处理数据声道数
 * @param bEnableAec: 是否使能AEC
-* @param bEnableAgc: 是否使能AGC
+* @param bEnableAgc: 是否使能AGC，多方互动时建议关闭AGC获得更好的AEC效果
 * @param bEnableAns: 是否使能ANS
 * @param pfOutput3ACallback: 经过3A处理后的音频采集数据输出回调接口
 * @param pObject: 上述输出回调接口的透传指针，将通过回调函数形参方式透传外层
-* @return: TRUE成功，FALSE则失败
+* @return: TRUE成功，FALSE失败
 */
-DLLIMPORT BOOL  SD3ACapRenderProcess_Start(void* p3AProcess, int nCapDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns,
+DLLIMPORT BOOL  SD3ACapRenderProcess_Start(void* p3AProcess, int nCapDeviceID, int nRenderDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns,
                                             Output3AProcessedCaptureData pfOutput3ACallback, void* pObject);
 
 
@@ -111,17 +139,34 @@ DLLIMPORT void  SD3ACapRenderProcess_Stop(void* p3AProcess);
 * @param p3AProcess: 模块指针
 * @param pucData: 待播放数据
 * @param nLen: 数据大小
-* @return: 
+* @return: 实际输出数据大小
 */
 DLLIMPORT int  SD3ACapRenderProcess_Play(void* p3AProcess, unsigned char *pucData, int nLen);
 
 
 
 /***
+* 切换音频采集设备
+* @param p3AProcess: 模块指针
+* @param nCapDeviceId: 需要切换到采集设备ID
+* @return: TRUE成功，FALSE失败
+*/
+DLLIMPORT BOOL  SD3ACapRenderProcess_ChangeCapDev(void* p3AProcess, int nCapDeviceId);
+
+/***
+* 切换音频渲染设备
+* @param p3AProcess: 模块指针
+* @param nCapDeviceId: 需要切换到渲染设备ID
+* @return: TRUE成功，FALSE失败
+*/
+DLLIMPORT BOOL  SD3ACapRenderProcess_ChangeRenderDev(void* p3AProcess, int nRenderDeviceId);
+
+
+/***
 * 启用AEC调试模式，此时将生成AEC处理前的Ref信号和Mic信号到指定的路径，便于观察二者延时差
 * @param p3AProcess: 模块指针
 * @param pcTempFileSaveDir: 调试文件存放路径
-* @return: TRUE-使能成功， FALSE-使能失败
+* @return: TRUE成功，FALSE失败
 */
 DLLIMPORT BOOL  SD3ACapRenderProcess_EnableDebugMode(void* p3AProcess, const char *pcTempFileSaveDir);
 
