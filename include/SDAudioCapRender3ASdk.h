@@ -77,11 +77,11 @@ typedef enum CAP_RENDER_3A_LOG_OUTPUT_LEVEL
 } CAP_RENDER_3A_LOG_OUTPUT_LEVEL;
 
 //3A处理后的采集数据回调
-typedef void (*Output3AProcessedCaptureData)(unsigned char *pucData, int nLen, void *pObject);
+typedef void (*Output3AProcessedCaptureData)(unsigned char *pucData, int nLen, BOOL bInVoiceStatus, void *pObject);
 
 
 
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////基础接口////////////////////////////////////////////////////
 // 音频3A处理-采集-渲染封装接口
 
 /***
@@ -142,11 +142,12 @@ DLLIMPORT_CAP_RENDER_3A void  SD3ACapRender_Delete(void** pp3AProcess);
 * @param bEnableAec: 是否使能AEC
 * @param bEnableAgc: 是否使能AGC，多方互动时建议关闭AGC获得更好的AEC效果
 * @param bEnableAns: 是否使能ANS
+* @param bEnableVad: 是否使能VAD
 * @param pfOutput3ACallback: 经过3A处理后的音频采集数据输出回调接口
 * @param pObject: 上述输出回调接口的透传指针，将通过回调函数形参方式透传外层
 * @return: TRUE成功，FALSE失败
 */
-DLLIMPORT_CAP_RENDER_3A BOOL  SD3ACapRender_Start(void* p3AProcess, int nCapDeviceID, int nRenderDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns,
+DLLIMPORT_CAP_RENDER_3A BOOL  SD3ACapRender_Start(void* p3AProcess, int nCapDeviceID, int nRenderDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns, BOOL bEnableVad,
                                             Output3AProcessedCaptureData pfOutput3ACallback, void* pObject);
 
 
@@ -169,6 +170,8 @@ DLLIMPORT_CAP_RENDER_3A void  SD3ACapRender_Stop(void* p3AProcess);
 DLLIMPORT_CAP_RENDER_3A int  SD3ACapRender_Play(void* p3AProcess, unsigned char *pucData, int nLen);
 
 
+
+////////////////////////////////////////////高级接口////////////////////////////////////////////////////
 
 /***
 * 切换音频采集设备
@@ -195,6 +198,35 @@ DLLIMPORT_CAP_RENDER_3A BOOL  SD3ACapRender_ChangeRenderDev(void* p3AProcess, in
 */
 DLLIMPORT_CAP_RENDER_3A BOOL  SD3ACapRender_EnableDebugMode(void* p3AProcess, const char *pcTempFileSaveDir);
 
+
+/***
+* 设置AGC参数，若需要调用本API，请于Start接口之前调用。未调用本API时将使用WEBRTC默认值
+* @param p3AProcess: 模块指针
+* @param nCompressionGaindB: 见WEBRTC定义，默认值9
+* @param nTargetLevelDbfs: 见WEBRTC定义，默认值3
+* @return:
+*/
+DLLIMPORT_CAP_RENDER_3A void  SD3ACapRender_ConfigAgc(void* p3AProcess, short nCompressionGaindB, short nTargetLevelDbfs);
+
+
+
+/***
+* 设置ANS参数，若需要调用本API，请于Start接口之前调用。未调用本API时将使用WEBRTC默认值
+* @param p3AProcess: 模块指针
+* @param nMode: 噪声消除强度， 0: Mild, 1: Medium , 2: Aggressive，默认值1
+* @return:
+*/
+DLLIMPORT_CAP_RENDER_3A void  SD3ACapRender_ConfigAns(void* p3AProcess, short nMode);
+
+
+
+/***
+* 设置VAD参数，若需要调用本API，请于Start接口之前调用。未调用本API时将使用WEBRTC默认值
+* @param p3AProcess: 模块指针
+* @param nMode: 四种模式，用数字0~3来区分，数字越大越不敏感，默认值3
+* @return:
+*/
+DLLIMPORT_CAP_RENDER_3A void  SD3ACapRender_ConfigVad(void* p3AProcess, short nMode);
 
 
 

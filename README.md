@@ -2,7 +2,7 @@
 
 
 ## Audio3ACapRenderSdk简介
-极简的音频采集、渲染、3A(AGC AEC ANS)一体处理封装库：
+极简的音频采集、渲染、3A(AGC AEC ANS VAD)一体处理封装库：
 音频3A处理（AEC、AGC、ANS）是实时互动领域无法绕开的问题。其中AEC处理与音频的采集、渲染紧密相关，三者的合理耦合对AEC效果影响很大，这也对开发者提出了更高的要求。为了简化上层业务的工作量，我们将音频采集、渲染、3A处理封装成一体库，对外提供非常易用的接口。该库具备以下特点：<br>
 * 1、AEC尽量往底层靠，不受网络传输过程中的抖动、丢包等因素影响。
 * 2、基于Webrtc AEC（AEC\AECM可选，默认AEC）
@@ -34,15 +34,18 @@ void  `SD3ACapRender_Delete`(void** pp3AProcess);
 * 开始启动SD3ACapRenderProcess处理，即开始采集和3A处理，并支持渲染播放<br>
 @param p3AProcess: 模块指针<br>
 @param nCapDeviceID: 采集音频设备ID，-1为默认设备<br>
-@param nSampleRate: 输入待处理数据采样率，比如32000、44100<br>
-@param nChannelNum: 输入待处理数据声道数，比如2、1<br>
+@param nRenderDeviceID: 音频渲染设备ID，-1为默认设备<br>
+@param nSampleRate: 输入待处理数据采样率<br>
+@param nChannelNum: 输入待处理数据声道数<br>
 @param bEnableAec: 是否使能AEC<br>
-@param bEnableAgc: 是否使能AGC<br>
+@param bEnableAgc: 是否使能AGC，多方互动时建议关闭AGC获得更好的AEC效果<br>
 @param bEnableAns: 是否使能ANS<br>
+@param bEnableVad: 是否使能VAD<br>
 @param pfOutput3ACallback: 经过3A处理后的音频采集数据输出回调接口<br>
-@param pObject: 上述输出回调接口的透传指针<br>
+@param pObject: 上述输出回调接口的透传指针，将通过回调函数形参方式透传外层<br>
 @return: TURE成功，FALSE失败<br>
-BOOL  `SD3ACapRender_Start`(void* p3AProcess, int nCapDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns, Output3AProcessedCaptureData pfOutput3ACallback, void* pObject);
+BOOL  `SD3ACapRender_Start`(void* p3AProcess, int nCapDeviceID, int nRenderDeviceID, int nSampleRate, int nChannelNum, BOOL bEnableAec, BOOL bEnableAgc, BOOL bEnableAns, BOOL bEnableVad,
+                                            Output3AProcessedCaptureData pfOutput3ACallback, void* pObject);
 
 ### 
 * 停止SD3ACapRenderProcess处理<br>
