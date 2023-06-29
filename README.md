@@ -65,3 +65,5 @@ int  `SD3ACapRender_Play`(void* p3AProcess, unsigned char *pucData, int nLen);
 
 
 ### 本库仅做演示用途，若需要商业用途与技术支持请联系 www.mediapro.cc
+
+### 更多资源见： https://mediapro.apifox.cn/
